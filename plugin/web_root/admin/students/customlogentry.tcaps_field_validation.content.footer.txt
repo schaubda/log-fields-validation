@@ -13,7 +13,7 @@
                     BASIC_FIELD_FUNC,
                     BASIC_FIELD_FUNC,
                     'validateReporterNameField',
-                    '',
+                    'validateReporterIDField',
                     '',
                     '',
                     'validateStudentNameField',
@@ -56,9 +56,24 @@
 
         let matchPattern = /\w+, \w+/;
 
-        if (!matchPattern.test(input.val()))
+        if (!matchPattern.test(input.val().trim()))
         {
             return 'This must be the reporter\'s name in the format "Last, First"';
+        }
+    }
+
+    function validateReporterIDField(input)
+    {
+        if (checkBlankField(input))
+        {
+            return REQUIRED_FIELD_MSG;
+        }
+
+        let matchPattern = /^\d{5,7}$/;
+
+        if (!matchPattern.test(input.val().trim()))
+        {
+            return 'This must be a valid employee number';
         }
     }
 
@@ -71,7 +86,7 @@
 
         let matchPattern = /\w+, \w+ \w+/;
 
-        if (!matchPattern.test(input.val()))
+        if (!matchPattern.test(input.val().trim()))
         {
             return 'This must be the student\'s name in the format "Last, First Middle"';
         }
