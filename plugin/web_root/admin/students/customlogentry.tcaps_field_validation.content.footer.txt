@@ -1,0 +1,19 @@
+<!-- Begin TCAPS Log Fields Validation Plugin -->
+<script type="text/javascript">
+    (function ()
+    {
+        let inputFields = $j('#content-main form div.box-round table:first :input');
+
+        $j(inputFields[0]).addClass('psSpecialValidate');
+        $j(inputFields[0]).attr('data-specialfunction', 'validateRequiredField');
+    })();
+
+    function validateRequiredField(input)
+    {
+        if (input.val().length === 0)
+        {
+            return "This field is required.";
+        }
+    }
+</script>
+<!-- End TCAPS Log Fields Validation Plugin -->
