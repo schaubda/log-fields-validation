@@ -4,19 +4,20 @@
 
     (function ()
     {
+        const BASIC_FIELD_FUNC = 'validateBasicField';
+
         let inputFields = $j('#content-main form div.box-round table:first :input');
         let fieldCount = 10;
-        let basicFieldFunc = 'validateBasicField';
         let fieldFuncs =
                 [
-                    basicFieldFunc,
-                    basicFieldFunc,
+                    BASIC_FIELD_FUNC,
+                    BASIC_FIELD_FUNC,
+                    'validateReporterNameField',
                     '',
                     '',
                     '',
-                    '',
-                    '',
-                    basicFieldFunc,
+                    'validateStudentNameField',
+                    BASIC_FIELD_FUNC,
                     '',
                     '',
                     ''
@@ -43,6 +44,36 @@
         if (checkBlankField(input))
         {
             return REQUIRED_FIELD_MSG;
+        }
+    }
+
+    function validateReporterNameField(input)
+    {
+        if (checkBlankField(input))
+        {
+            return REQUIRED_FIELD_MSG;
+        }
+
+        let matchPattern = /\w+, \w+/;
+
+        if (!matchPattern.test(input.val()))
+        {
+            return 'This must be the reporter\'s name in the format "Last, First"';
+        }
+    }
+
+    function validateStudentNameField(input)
+    {
+        if (checkBlankField(input))
+        {
+            return REQUIRED_FIELD_MSG;
+        }
+
+        let matchPattern = /\w+, \w+ \w+/;
+
+        if (!matchPattern.test(input.val()))
+        {
+            return 'This must be the student\'s name in the format "Last, First Middle"';
         }
     }
 </script>
