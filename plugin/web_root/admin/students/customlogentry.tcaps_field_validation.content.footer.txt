@@ -3,14 +3,28 @@
     (function ()
     {
         let inputFields = $j('#content-main form div.box-round table:first :input');
+        let fieldCount = 10;
+        let basicFieldIndices = [0, 1, 7];
 
-        $j(inputFields[0]).addClass('psSpecialValidate');
-        $j(inputFields[0]).attr('data-specialfunction', 'validateRequiredField');
+        for (let i = 0; i < fieldCount; i++)
+        {
+            $j(inputFields[i]).addClass('psSpecialValidate');
+
+            if (basicFieldIndices.includes(i))
+            {
+                $j(inputFields[i]).attr('data-specialfunction', 'validateBasicField');
+            }
+        }
     })();
 
-    function validateRequiredField(input)
+    function checkBlankField(input)
     {
-        if (input.val().length === 0)
+        return input.val().length === 0;
+    }
+
+    function validateBasicField(input)
+    {
+        if (checkBlankField(input))
         {
             return "This field is required.";
         }
