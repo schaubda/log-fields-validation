@@ -1,18 +1,34 @@
 <!-- Begin TCAPS Log Fields Validation Plugin -->
 <script type="text/javascript">
+    const REQUIRED_FIELD_MSG = 'This field is required';
+
     (function ()
     {
         let inputFields = $j('#content-main form div.box-round table:first :input');
         let fieldCount = 10;
-        let basicFieldIndices = [0, 1, 7];
+        let basicFieldFunc = 'validateBasicField';
+        let fieldFuncs =
+                [
+                    basicFieldFunc,
+                    basicFieldFunc,
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    basicFieldFunc,
+                    '',
+                    '',
+                    ''
+                ];
 
         for (let i = 0; i < fieldCount; i++)
         {
             $j(inputFields[i]).addClass('psSpecialValidate');
 
-            if (basicFieldIndices.includes(i))
+            if (fieldFuncs[i] !== '')
             {
-                $j(inputFields[i]).attr('data-specialfunction', 'validateBasicField');
+                $j(inputFields[i]).attr('data-specialfunction', fieldFuncs[i]);
             }
         }
     })();
@@ -26,7 +42,7 @@
     {
         if (checkBlankField(input))
         {
-            return "This field is required.";
+            return REQUIRED_FIELD_MSG;
         }
     }
 </script>
