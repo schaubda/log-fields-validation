@@ -13,13 +13,16 @@
 
         for (let i = 0; i < fieldCount; i++)
         {
-            $j(inputFields[i]).addClass('psSpecialValidate required');
+            $j(inputFields[i]).addClass('required');
 
             if (fieldFuncs[i] !== undefined)
             {
+                $j(inputFields[i]).addClass('psSpecialValidate');
                 $j(inputFields[i]).attr('data-specialfunction', fieldFuncs[i]);
             }
         }
+
+        $j(inputFields[5]).removeClass('required');
     })();
 
     function validateReporterNameField(input)
