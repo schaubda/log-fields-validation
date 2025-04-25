@@ -7,8 +7,8 @@
         let fieldFuncs =
                 {
                     2: 'validateReporterNameField',
-                    3: 'validateReporterIDField',
-                    6: 'validateStudentNameField',
+                    3: 'validateReporterIDField'
+                    // 6: 'validateStudentNameField',
                 };
 
         for (let i = 0; i < fieldCount; i++)
@@ -27,7 +27,7 @@
 
     function validateReporterNameField(input)
     {
-        let matchPattern = /\w+, \w+/;
+        let matchPattern = /.+, .+/;
 
         if (!matchPattern.test(input.val().trim()))
         {
@@ -45,14 +45,15 @@
         }
     }
 
-    function validateStudentNameField(input)
-    {
-        let matchPattern = /\w+, \w+ \w+/;
-
-        if (!matchPattern.test(input.val().trim()))
-        {
-            return 'This must be the student\'s name in the format "Last, First Middle"';
-        }
-    }
+    // function validateStudentNameField(input)
+    // {
+    //     let matchPattern = /.+, .+/;
+    //
+    //     if (!matchPattern.test(input.val().trim()))
+    //     {
+    //         return
+    //         'This must be the student\'s name in the format "Last, First". Middle name is optional.';
+    //     }
+    // }
 </script>
 <!-- End TCAPS Log Fields Validation Plugin -->
