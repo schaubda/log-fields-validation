@@ -3,12 +3,11 @@
     (function ()
     {
         let inputFields = $j('#content-main form div.box-round table:first :input');
-        let fieldCount = 10;
+        let fieldCount = 8;
         let fieldFuncs =
                 {
                     2: 'validateReporterNameField',
                     3: 'validateReporterIDField'
-                    // 6: 'validateStudentNameField',
                 };
 
         for (let i = 0; i < fieldCount; i++)
@@ -24,6 +23,17 @@
 
         $j(inputFields[5]).removeClass('required');
     })();
+
+    $j(function ()
+       {
+           let dateFields = $j('#content-main form div.box-round table:first :input')
+               .slice(0, 2);
+
+           dateFields.addClass('psDateWidget');
+
+           logTypeChange();
+           $j('#logtype').on('change', logTypeChange);
+       });
 
     function validateReporterNameField(input)
     {
@@ -45,15 +55,35 @@
         }
     }
 
-    // function validateStudentNameField(input)
-    // {
-    //     let matchPattern = /.+, .+/;
-    //
-    //     if (!matchPattern.test(input.val().trim()))
-    //     {
-    //         return
-    //         'This must be the student\'s name in the format "Last, First". Middle name is optional.';
-    //     }
-    // }
+    function logTypeChange()
+    {
+        let logType = parseInt($j('#logtype').val());
+        let inputFields = $j('#content-main form div.box-round table:first :input');
+        let locationField = inputFields[8];
+        let timeField = inputFields[9];
+
+        if (logType === -100000)
+        {
+            $j(locationField).addClass('required');
+            $j(timeField).addClass('required');
+        }
+        else
+        {
+            $j(locationField).removeClass('required unvalidated tagged hasHadError error');
+            $j(timeField).removeClass('required unvalidated tagged hasHadError error');
+
+            if ($j(locationField).nextAll('.error-message').length > 0)
+            {
+                clearError($j(locationField));
+            }
+
+            if ($j(timeField).nextAll('.error-message').length > 0)
+            {
+                clearError($j(timeField));
+            }
+        }
+
+        initBehaviors();
+    }
 </script>
 <!-- End TCAPS Log Fields Validation Plugin -->
