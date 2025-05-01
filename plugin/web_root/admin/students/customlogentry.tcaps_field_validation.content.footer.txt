@@ -1,27 +1,55 @@
 <!-- Begin TCAPS Log Fields Validation Plugin -->
 <script type="text/javascript">
-    (function ()
+    const FIELD_NAMES =
+              {
+                  'incidentDate':     'UF-008019-1',
+                  'entryDate':        'UF-008005-1',
+                  'reporterName':     'UF-008004-1',
+                  'employeeID':       'UF-008025-1',
+                  'subType':          'subtype',
+                  'incidentLocation': 'UF-008021-1',
+                  'incidentTime':     'UF-008006-1'
+              };
+
+    function getFieldByName(name)
     {
-        let inputFields = $j('#content-main form div.box-round table:first :input');
-        let fieldCount = 8;
-        let fieldFuncs =
-                {
-                    2: 'validateReporterNameField',
-                    3: 'validateReporterIDField'
-                };
-
-        for (let i = 0; i < fieldCount; i++)
+        for (let key in FIELD_NAMES)
         {
-            $j(inputFields[i]).addClass('required');
-
-            if (fieldFuncs[i] !== undefined)
+            if (FIELD_NAMES[key] === name)
             {
-                $j(inputFields[i]).addClass('psSpecialValidate');
-                $j(inputFields[i]).attr('data-specialfunction', fieldFuncs[i]);
+                return key;
             }
         }
 
-        $j(inputFields[5]).removeClass('required');
+        return null;
+    }
+
+    (function ()
+    {
+        let inputFields = $j('#content-main form div.box-round table:first :input')
+            .slice(0, 10);
+        let fieldFuncs =
+                {
+                    'reporterName': 'validateReporterNameField',
+                    'employeeID':   'validateReporterIDField'
+                };
+
+        inputFields.each(function (index, element)
+                         {
+                             let fieldName = getFieldByName($j(element).attr('name'));
+                             let ignoredFields = ['subType', 'incidentLocation', 'incidentTime'];
+
+                             if (!ignoredFields.includes(fieldName))
+                             {
+                                 $j(element).addClass('required');
+                             }
+
+                             if (fieldName in fieldFuncs)
+                             {
+                                 $j(element).addClass('psSpecialValidate');
+                                 $j(element).attr('data-specialfunction', fieldFuncs[fieldName]);
+                             }
+                         });
     })();
 
     $j(function ()
@@ -58,29 +86,24 @@
     function logTypeChange()
     {
         let logType = parseInt($j('#logtype').val());
-        let inputFields = $j('#content-main form div.box-round table:first :input');
-        let locationField = inputFields[8];
-        let timeField = inputFields[9];
+        let incidentFields =
+                $j(`[name="${FIELD_NAMES.incidentLocation}"], [name="${FIELD_NAMES.incidentTime}"]`);
 
         if (logType === -100000)
         {
-            $j(locationField).addClass('required');
-            $j(timeField).addClass('required');
+            incidentFields.addClass('required');
         }
         else
         {
-            $j(locationField).removeClass('required unvalidated tagged hasHadError error');
-            $j(timeField).removeClass('required unvalidated tagged hasHadError error');
+            incidentFields.removeClass('required unvalidated tagged hasHadError error');
 
-            if ($j(locationField).nextAll('.error-message').length > 0)
-            {
-                clearError($j(locationField));
-            }
-
-            if ($j(timeField).nextAll('.error-message').length > 0)
-            {
-                clearError($j(timeField));
-            }
+            incidentFields.each(function (index, element)
+                                {
+                                    if ($j(element).nextAll('.error-message').length > 0)
+                                    {
+                                        clearError($j(element));
+                                    }
+                                });
         }
 
         initBehaviors();
