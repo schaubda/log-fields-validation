@@ -95,15 +95,16 @@
         }
         else
         {
-            incidentFields.removeClass('required unvalidated tagged hasHadError error');
+            incidentFields
+                .each(function (index, element)
+                      {
+                          $j(element).removeClass('required unvalidated tagged hasHadError error');
 
-            incidentFields.each(function (index, element)
-                                {
-                                    if ($j(element).nextAll('.error-message').length > 0)
-                                    {
-                                        clearError($j(element));
-                                    }
-                                });
+                          if ($j(element).nextAll('.error-message').length > 0)
+                          {
+                              clearError($j(element));
+                          }
+                      });
         }
 
         initBehaviors();
