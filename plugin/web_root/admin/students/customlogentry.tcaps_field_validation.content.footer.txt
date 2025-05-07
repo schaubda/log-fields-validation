@@ -6,7 +6,10 @@
                   'entryDate':        'UF-008005-1',
                   'reporterName':     'UF-008004-1',
                   'employeeID':       'UF-008025-1',
+                  'logType':          'UF-008012-1$formatnumeric=#########.#####',
                   'subType':          'subtype',
+                  'studentName':      'UF-008008-1',
+                  'logDescription':   'UF-008009-1',
                   'incidentLocation': 'UF-008021-1',
                   'incidentTime':     'UF-008006-1'
               };
@@ -26,8 +29,16 @@
 
     (function ()
     {
-        let inputFields = $j('#content-main form div.box-round table:first :input')
-            .slice(0, 10);
+        let selector = '';
+
+        for (let key in FIELD_NAMES)
+        {
+            selector += `[name="${FIELD_NAMES[key]}"], `;
+        }
+
+        selector = selector.slice(0, -2);
+
+        let inputFields = $j(selector);
         let fieldFuncs =
                 {
                     'reporterName': 'validateReporterNameField',
