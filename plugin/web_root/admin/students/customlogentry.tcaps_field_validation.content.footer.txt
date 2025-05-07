@@ -2,19 +2,20 @@
 <script type="text/javascript">
     const FIELD_NAMES =
               {
-                  'incidentDate':     'UF-008019-1',
-                  'entryDate':        'UF-008005-1',
-                  'reporterName':     'UF-008004-1',
-                  'employeeID':       'UF-008025-1',
-                  'logType':          'UF-008012-1$formatnumeric=#########.#####',
+                  'incidentDate':     'UF-008019',
+                  'entryDate':        'UF-008005',
+                  'reporterName':     'UF-008004',
+                  'employeeID':       'UF-008025',
+                  'logType':          'UF-008012',
                   'subType':          'subtype',
-                  'studentName':      'UF-008008-1',
-                  'logDescription':   'UF-008009-1',
-                  'incidentLocation': 'UF-008021-1',
-                  'incidentTime':     'UF-008006-1'
+                  'studentName':      'UF-008008',
+                  'logDescription':   'UF-008009',
+                  'incidentLocation': 'UF-008021',
+                  'incidentTime':     'UF-008006'
               };
+    const NAME_SELECTOR = 'name^=';
 
-    function getFieldByName(name)
+    function getFieldKeyByName(name)
     {
         for (let key in FIELD_NAMES)
         {
@@ -33,7 +34,7 @@
 
         for (let key in FIELD_NAMES)
         {
-            selector += `[name="${FIELD_NAMES[key]}"], `;
+            selector += `[${NAME_SELECTOR}"${FIELD_NAMES[key]}"], `;
         }
 
         selector = selector.slice(0, -2);
@@ -47,28 +48,32 @@
 
         inputFields.each(function (index, element)
                          {
-                             let fieldName = getFieldByName($j(element).attr('name'));
+                             let fieldKey = getFieldKeyByName($j(element).attr('name'));
                              let ignoredFields = ['subType', 'incidentLocation', 'incidentTime'];
 
-                             if (!ignoredFields.includes(fieldName))
+                             if (!ignoredFields.includes(fieldKey))
                              {
                                  $j(element).addClass('required');
                              }
 
-                             if (fieldName in fieldFuncs)
+                             if (fieldKey in fieldFuncs)
                              {
                                  $j(element).addClass('psSpecialValidate');
-                                 $j(element).attr('data-specialfunction', fieldFuncs[fieldName]);
+                                 $j(element).attr('data-specialfunction', fieldFuncs[fieldKey]);
                              }
                          });
     })();
 
     $j(function ()
        {
-           let dateFields = $j('#content-main form div.box-round table:first :input')
-               .slice(0, 2);
+           // let dateFields = $j('#content-main form div.box-round table:first :input')
+           //     .slice(0, 2);
+           let dateFields = $j(
+               `[${NAME_SELECTOR}"${FIELD_NAMES.incidentDate}"], [${NAME_SELECTOR}"${FIELD_NAMES.entryDate}"]`);
+           let timeField = $j(`[${NAME_SELECTOR}"${FIELD_NAMES.incidentTime}"]`);
 
            dateFields.addClass('psDateWidget');
+           timeField.addClass('timeEntry');
 
            logTypeChange();
            $j('#logtype').on('change', logTypeChange);
@@ -98,7 +103,7 @@
     {
         let logType = parseInt($j('#logtype').val());
         let incidentFields =
-                $j(`[name="${FIELD_NAMES.incidentLocation}"], [name="${FIELD_NAMES.incidentTime}"]`);
+                $j(`[${NAME_SELECTOR}"${FIELD_NAMES.incidentLocation}"], [${NAME_SELECTOR}"${FIELD_NAMES.incidentTime}"]`);
 
         if (logType === -100000)
         {
