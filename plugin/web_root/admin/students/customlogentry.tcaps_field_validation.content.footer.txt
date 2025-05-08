@@ -28,6 +28,19 @@
     const NAME_SELECTOR = 'name^=';
 
     /**
+     * Validation error messages for specific fields.
+     * Maps logical field keys to their corresponding error message strings.
+     * @constant
+     * @type {Object.<string, string>}
+     */
+    const VALIDATION_MESSAGES =
+              {
+                  'reporterName': 'This must be the reporter\'s name in the format "Last, First"',
+                  'employeeID':   'This must be a valid employee number',
+                  'incidentTime': 'Incident time must be between 5:00 AM and 11:59 PM'
+              }
+
+    /**
      * Returns the logical field key for a given form field name.
      * @param {string} name - The form field name to look up.
      * @returns {string|null} The logical field key, or null if not found.
@@ -167,7 +180,7 @@
         // Test if the input value matches the required format
         if (!matchPattern.test(input.val().trim()))
         {
-            return 'This must be the reporter\'s name in the format "Last, First"';
+            return VALIDATION_MESSAGES.reporterName;
         }
     }
 
@@ -184,7 +197,7 @@
         // Check if the input value matches the pattern (i.e., is a valid employee number)
         if (!matchPattern.test(input.val().trim()))
         {
-            return 'This must be a valid employee number';
+            return VALIDATION_MESSAGES.employeeID;
         }
     }
 
@@ -204,16 +217,16 @@
 
         // Create a Date object representing the minimum allowed time (5:00 AM)
         let minTime = new Date();
-        minTime.setHours(6, 0, 0, 0);
+        minTime.setHours(5, 0, 0, 0);
 
         // Create a Date object representing the maximum allowed time (11:59 PM)
         let maxTime = new Date();
-        maxTime.setHours(18, 0, 0, 0);
+        maxTime.setHours(23, 59, 59, 0);
 
         // Check if the incident time is outside the allowed range
         if (incidentTime < minTime || incidentTime > maxTime)
         {
-            return 'Incident time must be between 6:00 AM and 6:00 PM';
+            return VALIDATION_MESSAGES.incidentTime;
         }
     }
 
