@@ -28,6 +28,25 @@
         return null;
     }
 
+    function convertTime12to24(time12h)
+    {
+        let [time, modifier] = time12h.split(' ');
+
+        let [hours, minutes] = time.split(':');
+
+        if (hours === '12')
+        {
+            hours = '00';
+        }
+
+        if (modifier === 'PM')
+        {
+            hours = parseInt(hours, 10) + 12;
+        }
+
+        return `${hours}:${minutes}`;
+    }
+
     (function ()
     {
         let selector = '';
@@ -43,12 +62,14 @@
         let fieldFuncs =
                 {
                     'reporterName': 'validateReporterNameField',
-                    'employeeID':   'validateReporterIDField'
+                    'employeeID':   'validateReporterIDField',
+                    'incidentTime': 'validateIncidentTime'
                 };
 
         inputFields.each(function (index, element)
                          {
-                             let fieldKey = getFieldKeyByName($j(element).attr('name'));
+                             let fieldKey =
+                                     getFieldKeyByName($j(element).attr('name').substring(0, 9));
                              let ignoredFields = ['subType', 'incidentLocation', 'incidentTime'];
 
                              if (!ignoredFields.includes(fieldKey))
@@ -66,8 +87,6 @@
 
     $j(function ()
        {
-           // let dateFields = $j('#content-main form div.box-round table:first :input')
-           //     .slice(0, 2);
            let dateFields = $j(
                `[${NAME_SELECTOR}"${FIELD_NAMES.incidentDate}"], [${NAME_SELECTOR}"${FIELD_NAMES.entryDate}"]`);
            let timeField = $j(`[${NAME_SELECTOR}"${FIELD_NAMES.incidentTime}"]`);
@@ -96,6 +115,24 @@
         if (!matchPattern.test(input.val().trim()))
         {
             return 'This must be a valid employee number';
+        }
+    }
+
+    function validateIncidentTime(input)
+    {
+        let [incidentHours, incidentMinutes] = convertTime12to24(input.val()).split(':');
+        let incidentTime = new Date();
+        incidentTime.setHours(parseInt(incidentHours), parseInt(incidentMinutes), 0, 0);
+
+        let minTime = new Date();
+        minTime.setHours(6, 0, 0, 0);
+
+        let maxTime = new Date();
+        maxTime.setHours(18, 0, 0, 0);
+
+        if (incidentTime < minTime || incidentTime > maxTime)
+        {
+            return 'Incident time must be between 6:00 AM and 6:00 PM';
         }
     }
 
