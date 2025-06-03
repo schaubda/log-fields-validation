@@ -91,10 +91,38 @@
     }
 
     /**
-     * Initializes field validation by adding required classes and special validation attributes.
-     * Immediately invoked on script load.
+     * Removes the Title (student name) field from the log entry form.
+     * After removing the field, re-applies alternating row background colors
+     * to the remaining table rows for visual consistency.
      */
-    (function ()
+    function removeTitleField()
+    {
+        $j(`[${NAME_SELECTOR}"${FIELD_NAMES.studentName}"]`).closest('tr').remove();
+
+        $j('#content-main .box-round table:first')
+            .find('tr').slice(0, -1)
+            .each(function (index)
+                  {
+                      if (index % 2 === 0)
+                      {
+                          $j(this).attr('bgcolor', '#edf3fe');
+                      }
+                      else
+                      {
+                          $j(this).attr('bgcolor', '#fff');
+                      }
+                  });
+    }
+
+    /**
+     * Configures form fields for validation and special behaviors.
+     *
+     * - Builds a selector for all input fields defined in FIELD_NAMES.
+     * - Adds the 'required' class to fields except those in the ignoredFields list.
+     * - Assigns special validation functions to specific fields by adding the
+     *   'psSpecialValidate' class and setting the 'data-specialfunction' attribute.
+     */
+    function configureFormFields()
     {
         let selector = '';
 
@@ -143,6 +171,18 @@
                                  $j(element).attr('data-specialfunction', fieldFuncs[fieldKey]);
                              }
                          });
+    }
+
+    /**
+     * Removes the Title field from the log entry form.
+     * Initializes field validation by adding required classes and special validation attributes.
+     * Immediately invoked on script load.
+     */
+    (function ()
+    {
+        removeTitleField();
+
+        configureFormFields();
     })();
 
     /**
