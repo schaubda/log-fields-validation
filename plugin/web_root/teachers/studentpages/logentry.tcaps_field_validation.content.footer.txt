@@ -1,0 +1,61 @@
+<!--NoLink-->
+<script type="text/javascript">
+    /**
+     * On DOM ready, removes the table row containing the Title field input
+     * and sets up a MutationObserver to handle dynamic changes in the form table.
+     */
+    $j(function ()
+       {
+           $j('#subject').closest('tr').remove();
+
+           setupMutationObserver();
+       });
+
+    /**
+     * Handles mutations observed in the form table.
+     * When the Incident Location field input is added,
+     * it removes the 'alt' class from all relevant rows and reapplies it
+     * to even-indexed rows for alternating row styling, then disconnects the observer.
+     *
+     * @param {MutationRecord[]} mutationsList - List of mutations observed.
+     * @param {MutationObserver} observer - The observer instance.
+     */
+    function mutationHandler(mutationsList, observer)
+    {
+        let formTable = $j('.fourDTable tbody tr')
+            .slice(2, $j('.fourDTable tbody tr').size() - 1);
+
+        mutationsList.forEach(
+            function (mutation)
+            {
+                if (mutation.type === 'childList' &&
+                    $j(mutation.addedNodes).is('#discipline_incidentlocation'))
+                {
+                    formTable.removeClass('alt');
+
+                    formTable.each(function (index)
+                                   {
+                                       if (index % 2 === 0)
+                                       {
+                                           $j(this).addClass('alt');
+                                       }
+                                   });
+
+                    observer.disconnect();
+                }
+            });
+    }
+
+    /**
+     * Sets up a MutationObserver on the '.fourDTable tbody' element
+     * to watch for child node changes and invoke the mutation handler.
+     */
+    function setupMutationObserver()
+    {
+        const targetNode = document.querySelector('.fourDTable tbody');
+        const config = {childList: true, subtree: true};
+
+        const observer = new MutationObserver(mutationHandler);
+        observer.observe(targetNode, config);
+    }
+</script>
