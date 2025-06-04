@@ -36,7 +36,6 @@
     const VALIDATION_MESSAGES =
               {
                   'reporterName': 'This must be the reporter\'s name in the format "Last, First"',
-                  'employeeID':   'This must be a valid employee number',
                   'incidentTime': 'Incident time must be between 5:00 AM and 11:59 PM'
               }
 
@@ -143,7 +142,6 @@
         let fieldFuncs =
                 {
                     'reporterName': 'validateReporterNameField',
-                    'employeeID':   'validateReporterIDField',
                     'incidentTime': 'validateIncidentTime'
                 };
 
@@ -154,7 +152,8 @@
                                      getFieldKeyByName($j(element).attr('name').substring(0, 9));
 
                              // List of fields to ignore when adding the 'required' class
-                             let ignoredFields = ['subType', 'incidentLocation', 'incidentTime'];
+                             let ignoredFields = ['subType', 'employeeID', 'incidentLocation',
+                                                  'incidentTime'];
 
                              // Add 'required' class to fields not in the ignoredFields list
                              if (!ignoredFields.includes(fieldKey))
@@ -221,23 +220,6 @@
         if (!matchPattern.test(input.val().trim()))
         {
             return VALIDATION_MESSAGES.reporterName;
-        }
-    }
-
-    /**
-     * Validates the employee ID field to ensure it is a 5-7 digit number.
-     * @param {jQuery} input - The jQuery input element.
-     * @returns {string|undefined} Error message if invalid, otherwise undefined.
-     */
-    function validateReporterIDField(input)
-    {
-        // Regular expression to match a number with 5 to 7 digits
-        let matchPattern = /^\d{5,7}$/;
-
-        // Check if the input value matches the pattern (i.e., is a valid employee number)
-        if (!matchPattern.test(input.val().trim()))
-        {
-            return VALIDATION_MESSAGES.employeeID;
         }
     }
 
