@@ -41,6 +41,12 @@
                                        }
                                    });
 
+                    let incidentLocationLabel =
+                            $j('#discipline_incidentlocation').closest('tr').find('label');
+                    let newHtml = incidentLocationLabel.html().replace(/<\/font>.*/, '</font>');
+
+                    incidentLocationLabel.html(newHtml);
+
                     observer.disconnect();
                 }
             });
