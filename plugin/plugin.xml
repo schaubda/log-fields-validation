@@ -3,7 +3,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         description="Customizes the admin portal log entries screen to add field validation and features."
         name="TCAPS Log Fields Validation"
-        version="25.6.2.8"
+        version="25.6.2.9"
         xsi:schemaLocation="http://plugin.powerschool.pearson.com plugin.xsd">
     <publisher name="Traverse City Area Public Schools">
         <contact email="schaubda@tcaps.net"/>

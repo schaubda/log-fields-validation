@@ -1,5 +1,21 @@
 <!--NoLink-->
+<!-- Begin TCAPS Log Fields Validation Plugin -->
 <script type="text/javascript">
+    /**
+     * CSS selectors for form fields that require validation.
+     * Used to attach event handlers and perform validation checks.
+     * Fields included:
+     *   - #discipline_incidentdate: Incident date input
+     *   - #discipline_incidenttime_disp: Incident time input
+     *   - #entry: Log entry text input
+     *   - #discipline_incidentlocation: Incident location input
+     *   - #subtype: Incident Subtype input
+     * @type {string}
+     */
+    const VALIDATION_FIELDS =
+              '#discipline_incidentdate, #discipline_incidenttime_disp, #entry, ' +
+              '#discipline_incidentlocation, #subtype';
+
     /**
      * On DOM ready, removes the table row containing the Title field input
      * and sets up a MutationObserver to handle dynamic changes in the form table.
@@ -10,47 +26,6 @@
 
            setupMutationObserver();
        });
-
-    /**
-     * Handles mutations observed in the form table.
-     * When the Incident Location field input is added,
-     * it removes the 'alt' class from all relevant rows and reapplies it
-     * to even-indexed rows for alternating row styling, then disconnects the observer.
-     *
-     * @param {MutationRecord[]} mutationsList - List of mutations observed.
-     * @param {MutationObserver} observer - The observer instance.
-     */
-    function mutationHandler(mutationsList, observer)
-    {
-        let formTable = $j('.fourDTable tbody tr')
-            .slice(2, $j('.fourDTable tbody tr').size() - 1);
-
-        mutationsList.forEach(
-            function (mutation)
-            {
-                if (mutation.type === 'childList' &&
-                    $j(mutation.addedNodes).is('#discipline_incidentlocation'))
-                {
-                    formTable.removeClass('alt');
-
-                    formTable.each(function (index)
-                                   {
-                                       if (index % 2 === 0)
-                                       {
-                                           $j(this).addClass('alt');
-                                       }
-                                   });
-
-                    let incidentLocationLabel =
-                            $j('#discipline_incidentlocation').closest('tr').find('label');
-                    let newHtml = incidentLocationLabel.html().replace(/<\/font>.*/, '</font>');
-
-                    incidentLocationLabel.html(newHtml);
-
-                    observer.disconnect();
-                }
-            });
-    }
 
     /**
      * Sets up a MutationObserver on the '.fourDTable tbody' element
@@ -64,4 +39,131 @@
         const observer = new MutationObserver(mutationHandler);
         observer.observe(targetNode, config);
     }
+
+    /**
+     * Handles mutations observed in the form table.
+     * Iterates through the list of mutations and, when a row containing
+     * the `#discipline_incidentlocation` field is added, performs the following:
+     *   - Restripes the table rows for visual consistency.
+     *   - Fixes the label for the incident location field.
+     *   - Attaches change event handlers to validation fields.
+     *   - Attaches a click handler to the submit button for form validation.
+     *   - Disconnects the observer to prevent repeated handling.
+     *
+     * @param {MutationRecord[]} mutationsList - List of mutations observed.
+     * @param {MutationObserver} observer - The observer instance.
+     */
+    function mutationHandler(mutationsList, observer)
+    {
+        mutationsList.forEach(
+            function (mutation)
+            {
+                if (mutation.type === 'childList' &&
+                    $j(mutation.addedNodes).is('#discipline_incidentlocation'))
+                {
+                    restripeTable();
+                    fixIncidentLocationLabel();
+                    $j(VALIDATION_FIELDS).on('change', fieldChange);
+                    $j('button[type="submit"]').click(validateFormFields);
+                    observer.disconnect();
+                }
+            });
+    }
+
+    /**
+     * Applies alternating 'alt' class to table rows for visual striping.
+     * Skips the first two and the last row of the table.
+     * Removes any existing 'alt' class, then adds it to even-indexed rows.
+     */
+    function restripeTable()
+    {
+        let formTable = $j('.fourDTable tbody tr')
+            .slice(2, $j('.fourDTable tbody tr').size() - 1);
+
+        formTable.removeClass('alt');
+
+        formTable.each(function (index)
+                       {
+                           if (index % 2 === 0)
+                           {
+                               $j(this).addClass('alt');
+                           }
+                       });
+    }
+
+    /**
+     * Fixes the label for the incident location field.
+     * Finds the label associated with the `#discipline_incidentlocation` input,
+     * and trims its HTML content to end at the closing </font> tag.
+     * This is used to remove the extra garbage characters left over in the
+     * database from a previous plugin.
+     */
+    function fixIncidentLocationLabel()
+    {
+        let incidentLocationLabel =
+                $j('#discipline_incidentlocation').closest('tr').find('label');
+        let newHtml = incidentLocationLabel.html().replace(/<\/font>.*/, '</font>');
+
+        incidentLocationLabel.html(newHtml);
+    }
+
+    /**
+     * Handles the change event for validation fields.
+     * If the field is empty or contains only whitespace, highlights it with a pink background.
+     * Otherwise, removes the background highlight.
+     */
+    function fieldChange()
+    {
+        if (!$j(this).val() || $j(this).val().trim() === '')
+        {
+            $j(this).css("background-color", "pink");
+        }
+        else
+        {
+            $j(this).css("background-color", "");
+        }
+    }
+
+    /**
+     * Validates required form fields before submission.
+     * Iterates over all fields specified in VALIDATION_FIELDS (excluding #subtype),
+     * and checks if they are empty or contain only whitespace.
+     * If a field is invalid:
+     *   - Sets the valid flag to false.
+     *   - Retrieves and cleans the associated label text.
+     *   - If the label is empty, defaults to 'Incident Time'.
+     *   - Displays a warning alert with the label.
+     *   - Highlights the field with a pink background and focuses it.
+     * Returns true if all fields are valid, false otherwise.
+     *
+     * @returns {boolean} Whether all required fields are valid.
+     */
+    function validateFormFields()
+    {
+        let valid = true;
+
+        // FIXME: mutliple alert fires can't be dismissed with OK button
+        $j(VALIDATION_FIELDS).not('#subtype').each(
+            function (index, element)
+            {
+                if (!$j(element).val() || $j(element).val().trim() === '')
+                {
+                    valid = false;
+
+                    let labelText = $j("label[for='" + $j(element).attr('id') + "']").text();
+                    labelText = labelText.replace(/\s\[.*/g, '');
+
+                    if (labelText === '')
+                    {
+                        labelText = 'Incident Time';
+                    }
+
+                    psAlert({message: `${labelText} must be entered.`, title: 'WARNING'});
+                    $j(element).css("background-color", "pink").focus();
+                }
+            });
+
+        return valid;
+    }
 </script>
+<!-- End TCAPS Log Fields Validation Plugin -->
