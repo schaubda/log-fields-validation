@@ -7,7 +7,6 @@
      */
     const FIELD_NAMES =
               {
-                  'incidentDate':     'UF-008019',
                   'entryDate':        'UF-008005',
                   'reporterName':     'UF-008004',
                   'employeeID':       'UF-008025',
@@ -16,7 +15,7 @@
                   'studentName':      'UF-008008',
                   'logDescription':   'UF-008009',
                   'incidentLocation': 'UF-008021',
-                  'incidentTime':     'UF-008006'
+                  'entryTime':        'UF-008006'
               };
 
     /**
@@ -90,14 +89,30 @@
     }
 
     /**
-     * Removes the Title (student name) field from the log entry form.
-     * After removing the field, re-applies alternating row background colors
-     * to the remaining table rows for visual consistency.
+     * Configures form fields for validation and special behaviors.
+     *
+     * - Builds a selector for all input fields defined in FIELD_NAMES.
+     * - Adds the 'required' class to fields except those in the ignoredFields list.
+     * - Assigns special validation functions to specific fields by adding the
+     *   'psSpecialValidate' class and setting the 'data-specialfunction' attribute.
      */
-    function removeTitleField()
+    function configureCustomFormFields()
     {
-        $j(`[${NAME_SELECTOR}"${FIELD_NAMES.studentName}"]`).closest('tr').remove();
+        restripeTable();
 
+        let incidentDate = $j('#discipline_incidentdate');
+        let incidentTime = $j('#discipline_incidenttime_disp');
+
+        incidentDate.attr('data-validation', '{"type": "date", "required": "true"}');
+
+        incidentTime.addClass('required psSpecialValidate');
+        incidentTime.attr('data-specialfunction', 'validateIncidentTime');
+
+        initBehaviors();
+    }
+
+    function restripeTable()
+    {
         $j('#content-main .box-round table:first')
             .find('tr').slice(0, -1)
             .each(function (index)
@@ -113,15 +128,7 @@
                   });
     }
 
-    /**
-     * Configures form fields for validation and special behaviors.
-     *
-     * - Builds a selector for all input fields defined in FIELD_NAMES.
-     * - Adds the 'required' class to fields except those in the ignoredFields list.
-     * - Assigns special validation functions to specific fields by adding the
-     *   'psSpecialValidate' class and setting the 'data-specialfunction' attribute.
-     */
-    function configureFormFields()
+    function configureStockFormFields()
     {
         let selector = '';
 
@@ -153,7 +160,7 @@
 
                              // List of fields to ignore when adding the 'required' class
                              let ignoredFields = ['subType', 'employeeID', 'incidentLocation',
-                                                  'incidentTime'];
+                                                  'entryTime'];
 
                              // Add 'required' class to fields not in the ignoredFields list
                              if (!ignoredFields.includes(fieldKey))
@@ -170,6 +177,42 @@
                                  $j(element).attr('data-specialfunction', fieldFuncs[fieldKey]);
                              }
                          });
+
+        $j(`[${NAME_SELECTOR}"${FIELD_NAMES.entryTime}"]`).addClass('timeEntry');
+
+        // Initialize log type dependent field requirements and behaviors
+        logTypeChange();
+
+        $j('#logtype').on('change', logTypeChange);
+    }
+
+    function setupMutationObserver()
+    {
+        // Select the target node to observe for changes
+        const targetNode = $j('#content-main .box-round table:first').get(0);
+        const config = {childList: true, subtree: true};
+
+        // Create a new MutationObserver instance with the mutation handler
+        const observer = new MutationObserver(mutationHandler);
+        observer.observe(targetNode, config);
+    }
+
+    function mutationHandler(mutationsList, observer)
+    {
+        // Iterate through each mutation record
+        mutationsList.forEach(function (mutation)
+                              {
+                                  // Check if the mutation type is 'childList'
+                                  if (mutation.type === 'childList')
+                                  {
+                                      // If the incident date field is added, remove the observer
+                                      if ($j(mutation.addedNodes).is('#discipline_incidentdate'))
+                                      {
+                                          observer.disconnect();
+                                          configureCustomFormFields();
+                                      }
+                                  }
+                              });
     }
 
     /**
@@ -179,32 +222,32 @@
      */
     (function ()
     {
-        removeTitleField();
-
-        configureFormFields();
+        $j(`[${NAME_SELECTOR}"${FIELD_NAMES.studentName}"]`).closest('tr').remove();
+        configureStockFormFields();
+        setupMutationObserver();
     })();
 
     /**
      * jQuery document ready handler.
      * Adds date and time widget classes and sets up log type change handler.
      */
-    $j(function ()
-       {
-           // Select the appropriate date and time fields using their name attributes
-           let dateFields = $j(
-               `[${NAME_SELECTOR}"${FIELD_NAMES.incidentDate}"], [${NAME_SELECTOR}"${FIELD_NAMES.entryDate}"]`);
-           let timeField = $j(`[${NAME_SELECTOR}"${FIELD_NAMES.incidentTime}"]`);
-
-           // Add classes to date and time fields to enable date picker
-           // and time widget functionality
-           dateFields.addClass('psDateWidget');
-           timeField.addClass('timeEntry');
-
-           // Initialize log type dependent field requirements and behaviors
-           logTypeChange();
-
-           $j('#logtype').on('change', logTypeChange);
-       });
+    // $j(function ()
+    //    {
+    //        // Select the appropriate date and time fields using their name attributes
+    //        // let dateFields = $j(
+    //        //     `[${NAME_SELECTOR}"${FIELD_NAMES.incidentDate}"], [${NAME_SELECTOR}"${FIELD_NAMES.entryDate}"]`);
+    //        let timeField = $j(`[${NAME_SELECTOR}"${FIELD_NAMES.incidentTime}"]`);
+    //
+    //        // Add classes to date and time fields to enable date picker
+    //        // and time widget functionality
+    //        // dateFields.addClass('psDateWidget');
+    //        timeField.addClass('timeEntry');
+    //
+    //        // Initialize log type dependent field requirements and behaviors
+    //        logTypeChange();
+    //
+    //        $j('#logtype').on('change', logTypeChange);
+    //    });
 
     /**
      * Validates the reporter name field to ensure it is in "Last, First" format.
