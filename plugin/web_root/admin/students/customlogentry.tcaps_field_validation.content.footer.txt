@@ -36,98 +36,35 @@
               {
                   'reporterName': 'This must be the reporter\'s name in the format "Last, First"',
                   'incidentTime': 'Incident time must be between 5:00 AM and 11:59 PM'
-              }
+              };
 
     /**
-     * Returns the logical field key for a given form field name.
-     * @param {string} name - The form field name to look up.
-     * @returns {string|null} The logical field key, or null if not found.
+     * Immediately Invoked Function Expression (IIFE)
+     * to initialize the TCAPS Log Fields Validation Plugin.
+     *
+     * - Removes the student name row from the form.
+     * - Configures stock form fields for validation.
+     * - Sets up a MutationObserver to handle changes in the form from
+     *   the Log Entry Management plugin.
      */
-    function getFieldKeyByName(name)
+    (function ()
     {
-        for (let key in FIELD_NAMES)
-        {
-            // If the value for this key matches the provided name, return the key
-            if (FIELD_NAMES[key] === name)
-            {
-                return key;
-            }
-        }
-
-        // If no matching key is found, return null
-        return null;
-    }
+        $j(`[${NAME_SELECTOR}"${FIELD_NAMES.studentName}"]`).closest('tr').remove();
+        configureStockFormFields();
+        setupMutationObserver();
+    })();
 
     /**
-     * Converts a 12-hour time string (e.g., "01:30 PM") to 24-hour format (e.g., "13:30").
-     * Used for validating incident times.
-     * @param {string} time12h - The time string in 12-hour format.
-     * @returns {string} The time in 24-hour format.
-     */
-    function convertTime12to24(time12h)
-    {
-        // Split the 12-hour time string into time and AM/PM modifier
-        let [time, modifier] = time12h.split(' ');
-
-        // Split the time into hours and minutes
-        let [hours, minutes] = time.split(':');
-
-        // If the hour is 12, set it to 00 (midnight or noon will be handled by modifier)
-        if (hours === '12')
-        {
-            hours = '00';
-        }
-
-        // If the modifier is PM, add 12 to the hours to convert to 24-hour format
-        if (modifier === 'PM')
-        {
-            hours = parseInt(hours, 10) + 12;
-        }
-
-        // Return the time in 24-hour format as a string
-        return `${hours}:${minutes}`;
-    }
-
-    /**
-     * Configures form fields for validation and special behaviors.
+     * Configures stock form fields for validation and special behaviors.
      *
      * - Builds a selector for all input fields defined in FIELD_NAMES.
      * - Adds the 'required' class to fields except those in the ignoredFields list.
      * - Assigns special validation functions to specific fields by adding the
      *   'psSpecialValidate' class and setting the 'data-specialfunction' attribute.
+     * - Adds the 'timeEntry' class to the entry time field.
+     * - Calls logTypeChange to set initial state based on the selected log type.
+     * - Sets up a change event handler for the log type dropdown.
      */
-    function configureCustomFormFields()
-    {
-        restripeTable();
-
-        let incidentDate = $j('#discipline_incidentdate');
-        let incidentTime = $j('#discipline_incidenttime_disp');
-
-        incidentDate.attr('data-validation', '{"type": "date", "required": "true"}');
-
-        incidentTime.addClass('required psSpecialValidate');
-        incidentTime.attr('data-specialfunction', 'validateIncidentTime');
-
-        initBehaviors();
-    }
-
-    function restripeTable()
-    {
-        $j('#content-main .box-round table:first')
-            .find('tr').slice(0, -1)
-            .each(function (index)
-                  {
-                      if (index % 2 === 0)
-                      {
-                          $j(this).attr('bgcolor', '#edf3fe');
-                      }
-                      else
-                      {
-                          $j(this).attr('bgcolor', '#fff');
-                      }
-                  });
-    }
-
     function configureStockFormFields()
     {
         let selector = '';
@@ -178,76 +115,15 @@
                              }
                          });
 
+        // Add 'timeEntry' class to the entry time field for time-specific behaviors
         $j(`[${NAME_SELECTOR}"${FIELD_NAMES.entryTime}"]`).addClass('timeEntry');
 
-        // Initialize log type dependent field requirements and behaviors
+        // Run log type change handler to set initial state based on the selected log type
         logTypeChange();
 
+        // Set up a change event handler for the log type dropdown
         $j('#logtype').on('change', logTypeChange);
     }
-
-    function setupMutationObserver()
-    {
-        // Select the target node to observe for changes
-        const targetNode = $j('#content-main .box-round table:first').get(0);
-        const config = {childList: true, subtree: true};
-
-        // Create a new MutationObserver instance with the mutation handler
-        const observer = new MutationObserver(mutationHandler);
-        observer.observe(targetNode, config);
-    }
-
-    function mutationHandler(mutationsList, observer)
-    {
-        // Iterate through each mutation record
-        mutationsList.forEach(function (mutation)
-                              {
-                                  // Check if the mutation type is 'childList'
-                                  if (mutation.type === 'childList')
-                                  {
-                                      // If the incident date field is added, remove the observer
-                                      if ($j(mutation.addedNodes).is('#discipline_incidentdate'))
-                                      {
-                                          observer.disconnect();
-                                          configureCustomFormFields();
-                                      }
-                                  }
-                              });
-    }
-
-    /**
-     * Removes the Title field from the log entry form.
-     * Initializes field validation by adding required classes and special validation attributes.
-     * Immediately invoked on script load.
-     */
-    (function ()
-    {
-        $j(`[${NAME_SELECTOR}"${FIELD_NAMES.studentName}"]`).closest('tr').remove();
-        configureStockFormFields();
-        setupMutationObserver();
-    })();
-
-    /**
-     * jQuery document ready handler.
-     * Adds date and time widget classes and sets up log type change handler.
-     */
-    // $j(function ()
-    //    {
-    //        // Select the appropriate date and time fields using their name attributes
-    //        // let dateFields = $j(
-    //        //     `[${NAME_SELECTOR}"${FIELD_NAMES.incidentDate}"], [${NAME_SELECTOR}"${FIELD_NAMES.entryDate}"]`);
-    //        let timeField = $j(`[${NAME_SELECTOR}"${FIELD_NAMES.incidentTime}"]`);
-    //
-    //        // Add classes to date and time fields to enable date picker
-    //        // and time widget functionality
-    //        // dateFields.addClass('psDateWidget');
-    //        timeField.addClass('timeEntry');
-    //
-    //        // Initialize log type dependent field requirements and behaviors
-    //        logTypeChange();
-    //
-    //        $j('#logtype').on('change', logTypeChange);
-    //    });
 
     /**
      * Validates the reporter name field to ensure it is in "Last, First" format.
@@ -331,6 +207,143 @@
 
         // Refresh the page UI to apply all validation class changes
         initBehaviors();
+    }
+
+    /**
+     * Returns the logical field key for a given form field name.
+     * @param {string} name - The form field name to look up.
+     * @returns {string|null} The logical field key, or null if not found.
+     */
+    function getFieldKeyByName(name)
+    {
+        for (let key in FIELD_NAMES)
+        {
+            // If the value for this key matches the provided name, return the key
+            if (FIELD_NAMES[key] === name)
+            {
+                return key;
+            }
+        }
+
+        // If no matching key is found, return null
+        return null;
+    }
+
+    /**
+     * Converts a 12-hour time string (e.g., "01:30 PM") to 24-hour format (e.g., "13:30").
+     * Used for validating incident times.
+     * @param {string} time12h - The time string in 12-hour format.
+     * @returns {string} The time in 24-hour format.
+     */
+    function convertTime12to24(time12h)
+    {
+        // Split the 12-hour time string into time and AM/PM modifier
+        let [time, modifier] = time12h.split(' ');
+
+        // Split the time into hours and minutes
+        let [hours, minutes] = time.split(':');
+
+        // If the hour is 12, set it to 00 (midnight or noon will be handled by modifier)
+        if (hours === '12')
+        {
+            hours = '00';
+        }
+
+        // If the modifier is PM, add 12 to the hours to convert to 24-hour format
+        if (modifier === 'PM')
+        {
+            hours = parseInt(hours, 10) + 12;
+        }
+
+        // Return the time in 24-hour format as a string
+        return `${hours}:${minutes}`;
+    }
+
+    /**
+     * Sets up a MutationObserver to watch for changes in the form table.
+     * Observes the first table inside '#content-main .box-round' for added or removed child nodes.
+     */
+    function setupMutationObserver()
+    {
+        // Select the target node to observe for changes
+        const targetNode = $j('#content-main .box-round table:first').get(0);
+        const config = {childList: true, subtree: true};
+
+        // Create a new MutationObserver instance with the mutation handler
+        const observer = new MutationObserver(mutationHandler);
+        observer.observe(targetNode, config);
+    }
+
+    /**
+     * Handles mutations observed in the form table.
+     * Iterates through mutation records and checks for added nodes.
+     * If the incident date field (`#discipline_incidentdate`) is added,
+     * disconnects the observer and triggers custom form field configuration.
+     *
+     * @param {MutationRecord[]} mutationsList - List of mutation records.
+     * @param {MutationObserver} observer - The MutationObserver instance.
+     */
+    function mutationHandler(mutationsList, observer)
+    {
+        // Iterate through each mutation record
+        mutationsList.forEach(function (mutation)
+                              {
+                                  // Check if the mutation type is 'childList'
+                                  if (mutation.type === 'childList')
+                                  {
+                                      // If the incident date field is added, remove the observer
+                                      if ($j(mutation.addedNodes).is('#discipline_incidentdate'))
+                                      {
+                                          observer.disconnect();
+                                          configureCustomFormFields();
+                                      }
+                                  }
+                              });
+    }
+
+    /**
+     * Configures form fields for validation and special behaviors.
+     *
+     * - Builds a selector for all input fields defined in FIELD_NAMES.
+     * - Adds the 'required' class to fields except those in the ignoredFields list.
+     * - Assigns special validation functions to specific fields by adding the
+     *   'psSpecialValidate' class and setting the 'data-specialfunction' attribute.
+     */
+    function configureCustomFormFields()
+    {
+        restripeTable();
+
+        let incidentDate = $j('#discipline_incidentdate');
+        let incidentTime = $j('#discipline_incidenttime_disp');
+
+        incidentDate.attr('data-validation', '{"type": "date", "required": "true"}');
+
+        incidentTime.addClass('required psSpecialValidate');
+        incidentTime.attr('data-specialfunction', 'validateIncidentTime');
+
+        initBehaviors();
+    }
+
+    /**
+     * Applies alternating background colors to table rows for visual striping.
+     * Targets the first table inside '#content-main .box-round', excluding the last row.
+     * Even-indexed rows get a light blue background, odd-indexed rows get white.
+     */
+    function restripeTable()
+    {
+        $j('#content-main .box-round table:first')
+            .find('tr').slice(0, -1)
+            .each(function (index)
+                  {
+                      if (index % 2 === 0)
+                      {
+                          $j(this).attr('bgcolor', '#edf3fe');
+                      }
+                      else
+                      {
+                          $j(this).attr('bgcolor', '#fff');
+                      }
+                  });
     }
 </script>
 <!-- End TCAPS Log Fields Validation Plugin -->
