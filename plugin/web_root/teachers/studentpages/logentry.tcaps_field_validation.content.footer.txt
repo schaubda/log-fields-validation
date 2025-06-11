@@ -14,7 +14,7 @@
      */
     const VALIDATION_FIELDS =
               '#discipline_incidentdate, #discipline_incidenttime_disp, #entry, ' +
-              '#discipline_incidentlocation, #subtype';
+              '#discipline_incidentlocation, select[name="subtype"]';
 
     /**
      * On DOM ready, removes the table row containing the Title field input
@@ -126,24 +126,26 @@
 
     /**
      * Validates required form fields before submission.
-     * Iterates over all fields specified in VALIDATION_FIELDS (excluding #subtype),
-     * and checks if they are empty or contain only whitespace.
-     * If a field is invalid:
-     *   - Sets the valid flag to false.
-     *   - Retrieves and cleans the associated label text.
-     *   - If the label is empty, defaults to 'Incident Time'.
-     *   - Displays a warning alert with the label.
-     *   - Highlights the field with a pink background and focuses it.
-     * Returns true if all fields are valid, false otherwise.
      *
-     * @returns {boolean} Whether all required fields are valid.
+     * Iterates over all fields specified in VALIDATION_FIELDS (except for the subtype field),
+     * checking if they are empty or contain only whitespace. If a field is invalid:
+     *   - Sets the valid flag to false.
+     *   - Attempts to retrieve the field's label text for reporting.
+     *   - If the label is missing, defaults to 'Incident Time'.
+     *   - Appends the label to the invalidFields string for display.
+     *   - Highlights the invalid field with a pink background and focuses it.
+     *
+     * If any required fields are invalid and the subtype field is filled,
+     * displays an alert listing the missing fields.
+     *
+     * @returns {boolean} true if all required fields are valid, false otherwise.
      */
     function validateFormFields()
     {
         let valid = true;
+        let invalidFields = '';
 
-        // FIXME: mutliple alert fires can't be dismissed with OK button
-        $j(VALIDATION_FIELDS).not('#subtype').each(
+        $j(VALIDATION_FIELDS).not('select[name="subtype"]').each(
             function (index, element)
             {
                 if (!$j(element).val() || $j(element).val().trim() === '')
@@ -151,17 +153,27 @@
                     valid = false;
 
                     let labelText = $j("label[for='" + $j(element).attr('id') + "']").text();
-                    labelText = labelText.replace(/\s\[.*/g, '');
 
                     if (labelText === '')
                     {
                         labelText = 'Incident Time';
                     }
 
-                    psAlert({message: `${labelText} must be entered.`, title: 'WARNING'});
+                    invalidFields += labelText.replace(/\s\[.*/g, '').trim() + ',<br/>';
+
                     $j(element).css("background-color", "pink").focus();
                 }
             });
+
+        if (!valid && invalidFields !== '' && $j('select[name="subtype"]').val())
+        {
+            invalidFields = invalidFields.replace(/,<br\/>$/g, '');
+
+            psAlert({
+                        message: `The following fields must be entered:<br/>${invalidFields}`,
+                        title:   'WARNING'
+                    });
+        }
 
         return valid;
     }
