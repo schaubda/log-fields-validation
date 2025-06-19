@@ -152,8 +152,15 @@
     {
         let valid = true;
         let invalidFields = '';
+        let validationFields = $j(VALIDATION_FIELDS).not('select[name="subtype"]');
 
-        $j(VALIDATION_FIELDS).not('select[name="subtype"]').each(
+        if ($j('#logtype').val() !== -100000)
+        {
+            validationFields = validationFields
+                .not('#discipline_incidenttime_disp, #discipline_incidentlocation');
+        }
+
+        validationFields.each(
             function (index, element)
             {
                 if (!$j(element).val() || $j(element).val().trim() === '')
@@ -182,7 +189,7 @@
                         title:   'WARNING'
                     });
         }
-        else if ($j('select[name="subtype"]').val())
+        else if ($j('select[name="subtype"]').val() && $j('#logtype').val() === -100000)
         {
             valid = validateIncidentTime();
 
