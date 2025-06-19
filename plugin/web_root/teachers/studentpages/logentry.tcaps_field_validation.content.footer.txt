@@ -120,7 +120,15 @@
         }
         else
         {
-            $j(this).css("background-color", "");
+            if ($j(this).attr('id') === 'discipline_incidenttime_disp'
+                && !validateIncidentTime())
+            {
+                $j(this).css("background-color", "pink");
+            }
+            else
+            {
+                $j(this).css("background-color", "");
+            }
         }
     }
 
@@ -174,8 +182,74 @@
                         title:   'WARNING'
                     });
         }
+        else if ($j('select[name="subtype"]').val())
+        {
+            valid = validateIncidentTime();
+
+            if (!valid)
+            {
+                psAlert({
+                            message: 'The incident time must be between 5:00 AM and 11:59 PM',
+                            title:   'WARNING'
+                        });
+
+                $j('#discipline_incidenttime_disp').css("background-color", "pink").focus();
+            }
+        }
 
         return valid;
+    }
+
+    function validateIncidentTime()
+    {
+        // Convert the input time from 12-hour to 24-hour format and split into hours and minutes
+        let [incidentHours, incidentMinutes] =
+                convertTime12to24($j('#discipline_incidenttime_disp').val()).split(':');
+
+        // Create a Date object for the incident time and set its hours and minutes
+        let incidentTime = new Date();
+        incidentTime.setHours(parseInt(incidentHours), parseInt(incidentMinutes), 0, 0);
+
+        // Create a Date object representing the minimum allowed time (5:00 AM)
+        let minTime = new Date();
+        minTime.setHours(5, 0, 0, 0);
+
+        // Create a Date object representing the maximum allowed time (11:59 PM)
+        let maxTime = new Date();
+        maxTime.setHours(23, 59, 59, 0);
+
+        // Check if the incident time is outside the allowed range
+        return incidentTime >= minTime && incidentTime <= maxTime;
+    }
+
+    /**
+     * Converts a 12-hour time string (e.g., "01:30 PM") to 24-hour format (e.g., "13:30").
+     * Used for validating incident times.
+     * @param {string} time12h - The time string in 12-hour format.
+     * @returns {string} The time in 24-hour format.
+     */
+    function convertTime12to24(time12h)
+    {
+        // Split the 12-hour time string into time and AM/PM modifier
+        let [time, modifier] = time12h.split(' ');
+
+        // Split the time into hours and minutes
+        let [hours, minutes] = time.split(':');
+
+        // If the hour is 12, set it to 00 (midnight or noon will be handled by modifier)
+        if (hours === '12')
+        {
+            hours = '00';
+        }
+
+        // If the modifier is PM, add 12 to the hours to convert to 24-hour format
+        if (modifier === 'PM')
+        {
+            hours = parseInt(hours, 10) + 12;
+        }
+
+        // Return the time in 24-hour format as a string
+        return `${hours}:${minutes}`;
     }
 </script>
 <!-- End TCAPS Log Fields Validation Plugin -->
